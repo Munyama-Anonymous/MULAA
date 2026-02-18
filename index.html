@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karis · product viewing</title>
+    <!-- Font Awesome for subtle icons (optional, but adds nice touch) -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="images.html">
+    
+</head>
+<body>
+    <!-- ========== HOME PAGE (visible by default) ========== -->
+    <div id="homePage" class="home-page">
+        <header class="home-header">
+            <h1>MFI LIMITED</h1>
+            <div class="title-tag">
+                <i class="fas fa-camera-retro"></i>
+                <span>welcome to product viewing</span>
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        </header>
+
+        <main class="home-main">
+            <div class="hero-center">
+                <h2>🔍 find what inspires you</h2>
+                <!-- central search bar & view button -->
+                <div class="search-view-panel">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search for specific image..." id="homeSearchInput">
+                    <button id="homeSearchBtn">
+                       search
+                    </button>
+                </div>
+                <!-- subtle hint: click view all to go to images page -->
+                <div class="nav-hint">
+                    <a href="images.html">📸 go to PRODUCTS page »</a>
+                </div>
+            </div>
+        </main>
+
+        <footer class="home-footer">
+            <p>
+                you can reach us through:..<a href="Contacts.html">Contact Us</a>
+            </p>
+        </footer>
+    </div>
+
+    <!-- ========== IMAGES PAGE (hidden initially) ========== -->
+    
+        <footer class="images-footer">
+            <p>
+                <i class="fas fa-heart"></i> you can reach us through: 
+                <a href="#">contact@karis.demo</a> 
+                <i class="fab fa-whatsapp"></i> 0790717274
+            </p>
+            <div style="margin-top: 0.5rem; font-size: 0.9rem;">
+                <a href="#" id="backToHomeLink">← back to home</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        (function() {
+            // Get references to the two pages
+            const homePage = document.getElementById('homePage');
+            const imagesPage = document.getElementById('imagesPage');
+
+            // Navigation elements
+            const viewAllBtn = document.getElementById('viewAllBtn');
+            const goToImagesLinkHome = document.getElementById('goToImagesLinkHome');
+            const backToHomeLink = document.getElementById('backToHomeLink');
+
+            // Search inputs (home + fixed)
+            const homeSearchInput = document.getElementById('homeSearchInput');
+            const fixedSearchInput = document.getElementById('fixedSearchInput');
+            const fixedSearchBtn = document.getElementById('fixedSearchBtn');
+
+            // Container for image grid
+            const imageGrid = document.getElementById('imageGridContainer');
+
+            // ---------- helper: show home, hide images ----------
+            function showHomePage() {
+                homePage.style.display = 'flex';
+                imagesPage.style.display = 'none';
+            }
+
+            // ---------- show images page, hide home ----------
+            function showImagesPage() {
+                homePage.style.display = 'none';
+                imagesPage.style.display = 'flex';
+                // optional: focus on fixed search
+                fixedSearchInput.focus();
+            }
+
+            // function to render images based on filter term (if any)
+            function renderImages(filter = '') {
+                // clear grid
+                imageGrid.innerHTML = '';
+
+                // filter products (case-insensitive)
+                const filtered = demoProducts.filter(p => 
+                    p.name.toLowerCase().includes(filter.toLowerCase()))
+                ;
+
+                if (filtered.length === 0) {
+                    // show a nice "no results" placeholder spanning both columns
+                    const noMsg = document.createElement('div');
+                    noMsg.style.gridColumn = '1 / -1';
+                    noMsg.style.textAlign = 'center';
+                    noMsg.style.padding = '4rem';
+                    noMsg.style.background = '#eef2f6';
+                    noMsg.style.borderRadius = '4rem';
+                    noMsg.style.fontSize = '1.4rem';
+                    noMsg.style.color = '#3e5a70';
+                    noMsg.innerHTML = '<i class="fas fa-image"></i> no matching products · try another search';
+                    imageGrid.appendChild(noMsg);
+                    return;
+                }
+
+                // create cards
+                filtered.forEach(product => {
+                    const card = document.createElement('div');
+                    card.className = 'img-card';
+
+                    // image element
+                    const img = document.createElement('img');
+                    img.src = product.img;
+                    img.alt = product.name;
+                    img.loading = 'lazy';
+
+                    // label
+                    const label = document.createElement('div');
+                    label.className = 'img-label';
+                    label.innerHTML = `<i class="fas fa-tag"></i> ${product.name}`;
+
+                    card.appendChild(img);
+                    card.appendChild(label);
+                    imageGrid.appendChild(card);
+                });
+            }
+
+            // initial render of images (empty filter -> all)
+            renderImages('');
+
+            // ---------- event: view all button on home ----------
+            viewAllBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                // also pass the home search term? optional: copy home search to fixed
+                const homeTerm = homeSearchInput.value.trim();
+                if (homeTerm !== '') {
+                    fixedSearchInput.value = homeTerm;   // sync to fixed bar
+                    renderImages(homeTerm);
+                } else {
+                    fixedSearchInput.value = '';          // clear fixed bar if empty
+                    renderImages('');                      // show all
+                }
+                showImagesPage();
+            });
+
+            // ---------- go to images via home link ----------
+            goToImagesLinkHome.addEventListener('click', function(e) {
+                e.preventDefault();
+                // preserve any search? we decide: just reset
+                fixedSearchInput.value = '';
+                renderImages('');
+                showImagesPage();
+            });
+
+            // ---------- back to home from images page ----------
+            backToHomeLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                showHomePage();
+                // optional: sync home search input with whatever was in fixed
+                homeSearchInput.value = fixedSearchInput.value;   // carry over term
+            });
+
+            // ---------- fixed search button (images page) ----------
+            function performFixedSearch() {
+                const term = fixedSearchInput.value.trim();
+                renderImages(term);
+            }
+
+            fixedSearchBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                performFixedSearch();
+            });
+
+            // allow enter key in fixed search input
+            fixedSearchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performFixedSearch();
+                }
+            });
+
+            // small extra: also let home search input trigger view all on enter?
+            homeSearchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    viewAllBtn.click();   // triggers same as view all
+                }
+            });
+
+            // ensure that "contact us" links don't actually navigate
+            document.querySelectorAll('a[href="#"]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    if (!link.classList.contains('nav-hint') && !link.id.includes('backToHome') && !link.id.includes('goToImages')) {
+                        e.preventDefault();
+                        // just demo – you could open modal but we leave empty
+                    }
+                });
+            });
+            // allow the contact mails to behave as dummy (prevent jump)
+            document.querySelectorAll('a[href*="contact"]').forEach(a => {
+                a.addEventListener('click', (e) => e.preventDefault());
+            });
+
+            // start with home visible (default)
+            showHomePage();
+
+            // edge: if someone types from home searchbar, it stays
+        })();
+    </script>
+    <!-- small extra style to make fixed search visible on images page -->
+    <style>
+        /* ensure fixed bar doesn't overlap header */
+        .images-header {
+            padding-top: 2rem;
+        }
+        .fixed-search {
+            margin-top: 0.5rem;
+        }
+        /* for very small screens, fixed search position adjust */
+        @media (max-width: 480px) {
+            .fixed-search {
+                top: 0.6rem;
+                right: 0.6rem;
+                left: 0.6rem;
+                width: auto;
+            }
+        }
+    </style>
+</body>
+</html>
